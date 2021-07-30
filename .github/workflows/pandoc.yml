@@ -9,4 +9,4 @@ jobs:
       - uses: docker://pandoc/core:2.9
         with:
           # args: "--help" # gets appended to pandoc command
-          args: origin/Linux0.org -f org -t html -s -o Linux0.html
+          args: Linux0.org -f org -t html -s -o Linux0.html
