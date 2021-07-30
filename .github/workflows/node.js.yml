@@ -24,6 +24,8 @@ jobs:
     - run: pwd
     - run: ls -a
     - uses: actions/checkout@v2
+    - run: pwd
+    - run: ls -a
     # - uses: borales/actions-yarn@v2.3.0
     #   with:
     #     cmd: install # will run `yarn install` command
