@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - run: pwd
-      - run: ll
+      - run: ls -a
       - uses: docker://pandoc/core:2.9
         with:
           # args: "--help" # gets appended to pandoc command
