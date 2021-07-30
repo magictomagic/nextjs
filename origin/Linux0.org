@@ -1,0 +1,112 @@
+
+
+* Backup and Restore
+thanks to [[http://zuyunfei.com/2015/06/04/linux-dd/][article1]], [[https://blog.csdn.net/xtggbmdk/article/details/82706380][article2]]
+*Waring:*
+  ~dd~ will overload that disk you allocated before
+  ~mount~ just modify the img file
+*Assert:* :D
+  Success on VMware(save time) should be the same as which on Real Bare Machine
+** VMware
+ *If it comes to Boot on LiveCD:*
+  choose ~use iso image file~ in ~CD/DVD(SATA)~ (I use Ubuntu. Tails or others distributions may also works)
+  click ~connect at power on~
+  ~power~ -> ~power on to firmware~ -> ~cd-rom first~
+*** Backup
+**** Whole disk
+*Make compressed img:*
+  ~dd if=/dev/sda | gzip > /path to usb/disk.img.gz~
+ Warning: Do not set path on current Linux disk or else the size of disk.img would be infinite
+*Make uncompressed img:*
+  ~dd if=/dev/sda of=/path to usb/disk.img~
+ Warning: Do not use disk based on magnetic and turntable, it takes me more than 12 hours but dumped less than 30G to dd 100G sda to disk.img
+**** Partial disk
+***** By Calculate
+  use ~lsblk~ or ~gparted~ to check disk content
+  ~bs*count/1024=x(kb)~ should bigger than fdisk命令中最大的end数, if your content near and less than 30G:
+    ~dd bs=512 count=62914560 if=/dev/sda of=/path to disk/back.img~
+*** Create new mechine in VMware
+ *Requirements on Disk to Restore:*
+   disk must bigger than initial .img file
+   use corresponding distrubution
+   set usb compatibility to USB 3.1
+*** Restore
+**** Boot on LiveCD
+ The first step
+**** By Compressed file
+~gzip -dc /path to usb/disk.img.gz | dd of=/dev/sda~
+**** By Uncompressed file
+~dd if=/path to usb/disk.img of=/dev/sda~
+**** Check success
+  Remember to exit, choose ~Use physical drive, Auto detect~, unclick ~Connect at power on~, power on and enter your Restored Linux system
+Rearrange your partition
+** Bare Machine
+*** Backup
+both backup the whole disk and partial disk
+*** Restore
+wish never use it:
+** TODO Make LiveCD
+Ubuntu can refer to [[https://help.ubuntu.com/community/LiveCD/Persistence][link1]] and [[https://help.ubuntu.com/community/LiveCD][link2]] to make Persistent Storage. But as to liveCD(Live Kit) use [[https://github.com/Tomas-M/linux-live][tools]] to [[https://www.linux-live.org/][make your own linux distribution]].
+** Become a spy from scratch
+I failed on modifying the img file of tails 4.20 by booting it in livecd but success on mounting encrypted disk via tails. Follow the [[https://tails.boum.org/doc/advanced_topics/persistence/check_file_system/][link]] and plug another usb disk, but remember to DELETE the partiton first so that you can use LUKS. Everytime you want to have the premise to mount the encrypted have you to go to the Utilities->Disks and enter the password.
+** mount(Run the System maybe by chroot or other methods later)
+copy from [[https://www.linuxquestions.org/questions/linux-general-1/how-to-mount-img-file-882386/][link]], tail.img, ubuntu.img(make by dd) both work.
+  The .img files are not images of a partition, but of a whole disk. That means they start with a bootloader and a partition table. You have to find out the offset of the partition and mount it with the offset option of mount.
+    If you do a Code:
+      ~fdisk -l /path/to/image~
+  it will show you the block-size and the start-block of the partition. You can use that to calculate the offset.
+For example, I have an image of a bootable stick with a 4GB FAT32 partition. The output of the fdisk command is Code:
+#+begin_comment
+Disk Stick.img: 3984 MB, 3984588800 bytes
+249 heads, 6 sectors/track, 5209 cylinders, total 7782400 sectors
+Units = sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk identifier: 0x0004bfaa
+
+    Device Boot      Start         End      Blocks   Id  System
+Stick.img1   *         128     8015999     4007936    b  W95 FAT32
+#+end_comment
+So I have a block-size of 512 bytes and the start-block is 128. The offset is 512 * 128 = 65536.
+ So the mount command would be Code:
+  ~mount -o loop,offset=65536 Stick.img /mnt/tmp~
+~umount /mnt/tmp/~ in different directory
+*** TODO Chroot or other methods
+mount, chroot ubuntu.img to see if I can use Rime, Chrome and others
+* Resize disk
+thanks to [[https://www.howtogeek.com/114503/how-to-resize-your-ubuntu-partitions/][article]]
+** shrink disk
+*Sucess both on VMware and Bare Machine*
+backup
+boot on livecd(safe graphics)
+gparted
+* shell
+** basic operation
+ctrl+alt+t是打开一个terminal
+ctrl+d关闭一个terminal
+
+打开terminal之后使用ctrl+shift+t是在terminal中打开多个标签
+
+在多个标签中切换的方法：
+alt+1 alt+2 alt+3......
+
+source 脚本名，是在當前shell環境下執行。
+sh 脚本名，是通過建立子shell環境並進行執行。(不影响当前的shell环境（上下文）)
+vim 下 :source % 加载激活当前环境，有些系统需要 :w 一下
+
+zsh切换bash bash切换zsh
+切换bash
+chsh -s /bin/bash
+切换zsh
+chsh -s /bin/zsh
+关闭终端后才有效
+** TODO bind common commands to shotcut
+thanks to [[https://stackoverflow.com/questions/4200800/in-bash-how-do-i-bind-a-function-key-to-a-command][link1]], [[https://unix.stackexchange.com/questions/89622/how-to-execute-a-script-in-shell-when-a-shortcut-key-is-pressed][link2]]
+* Tools
+** rsync
+local <-> remote
+增量备份
+* WAITING 花里胡哨
+GNOME Shell
+GNOME Tweaks
+GNOME Extensions
